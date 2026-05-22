@@ -80,40 +80,41 @@ mchroot:
           'priority = 10' \
           > /etc/portage/repos.conf/overlay-local
 
-        #wget --no-check-certificate \
-        #  -O /var/overlay/overlay-local/sys-boot/u-boot-bananapi/u-boot-bananapi-2026.04.ebuild \
-        #  https://raw.githubusercontent.com/coffnix/coffnix-ebuilds/refs/heads/master/sys-boot/u-boot-bananapi/u-boot-bananapi-2026.04.ebuild
+        wget --no-check-certificate \
+          -O /var/overlay/overlay-local/sys-boot/u-boot-bananapi/u-boot-bananapi-2026.04.ebuild \
+          https://raw.githubusercontent.com/coffnix/coffnix-ebuilds/refs/heads/master/sys-boot/u-boot-bananapi/u-boot-bananapi-2026.04.ebuild
 
-        #ebuild /var/overlay/overlay-local/sys-boot/u-boot-bananapi/u-boot-bananapi-2026.04.ebuild manifest
-        #emerge sys-boot/u-boot-bananapi
+        ebuild /var/overlay/overlay-local/sys-boot/u-boot-bananapi/u-boot-bananapi-2026.04.ebuild manifest
+        emerge sys-boot/u-boot-bananapi
 
-        #emerge sys-kernel/vanilla-sources
-        #emerge sys-libs/ncurses
-        #emerge dev-embedded/u-boot-tools
+        emerge sys-kernel/vanilla-sources
+        emerge sys-libs/ncurses
+        emerge dev-embedded/u-boot-tools
 
-        #cd ${ROOT}/usr/src/linux
+        cd ${ROOT}/usr/src/linux
+        wget --no-check-certificate -O ${ROOT}/usr/src/linux/.config https://salsa.debian.org/kernel-team/linux/-/raw/debian/latest/debian/config/armhf/config
 
         #make ARCH=arm sunxi_defconfig
-        #make ARCH=arm olddefconfig
+        make ARCH=arm olddefconfig
 
-        #make ARCH=arm -j$(nproc) zImage modules dtbs
-        #make ARCH=arm INSTALL_MOD_PATH=${ROOT} modules_install
+        make ARCH=arm -j$(nproc) zImage modules dtbs
+        make ARCH=arm INSTALL_MOD_PATH=${ROOT} modules_install
 
-        #install -d ${ROOT}/boot
-        #install -d ${ROOT}/boot/dtb
+        install -d ${ROOT}/boot
+        install -d ${ROOT}/boot/dtb
 
-        #install -m 0644 arch/arm/boot/zImage \
-        #  ${ROOT}/boot/zImage
+        install -m 0644 arch/arm/boot/zImage \
+          ${ROOT}/boot/zImage
 
-        #find arch/arm/boot/dts/ -type f -name 'sun7i-a20-*.dtb' \
-        #  -exec install -m 0644 {} ${ROOT}/boot/dtb/ \;
+        find arch/arm/boot/dts/ -type f -name 'sun7i-a20-*.dtb' \
+          -exec install -m 0644 {} ${ROOT}/boot/dtb/ \;
 
-        #cp -f \
-        #  arch/arm/boot/dts/allwinner/sun7i-a20-bananapro.dtb \
-        #  ${ROOT}/boot/dtb/sun7i-a20-bananapro.dtb 2>/dev/null || \
-        #cp -f \
-        #  arch/arm/boot/dts/sun7i-a20-bananapro.dtb \
-        #  ${ROOT}/boot/dtb/sun7i-a20-bananapro.dtb
+        cp -f \
+          arch/arm/boot/dts/allwinner/sun7i-a20-bananapro.dtb \
+          ${ROOT}/boot/dtb/sun7i-a20-bananapro.dtb 2>/dev/null || \
+        cp -f \
+          arch/arm/boot/dts/sun7i-a20-bananapro.dtb \
+          ${ROOT}/boot/dtb/sun7i-a20-bananapro.dtb
 
         install -d ${ROOT}/etc
 
