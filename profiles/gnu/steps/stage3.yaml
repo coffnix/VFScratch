@@ -91,7 +91,6 @@ mchroot:
           'priority = 10' \
           > /etc/portage/repos.conf/overlay-local
 
-<<<<<<< HEAD
         wget --no-check-certificate \
           -O /var/overlay/overlay-local/sys-boot/u-boot-bananapi/u-boot-bananapi-2026.04.ebuild \
           https://raw.githubusercontent.com/coffnix/coffnix-ebuilds/refs/heads/master/sys-boot/u-boot-bananapi/u-boot-bananapi-2026.04.ebuild
@@ -107,14 +106,12 @@ mchroot:
         emerge dev-embedded/u-boot-tools
 
         cd ${ROOT}/usr/src/linux
-<<<<<<< HEAD
         wget --no-check-certificate -O ${ROOT}/usr/src/linux/.config https://salsa.debian.org/kernel-team/linux/-/raw/debian/latest/debian/config/armhf/config
 
         #make ARCH=arm sunxi_defconfig
 =======
 
         make ARCH=arm sunxi_defconfig
->>>>>>> 2e4638a (bugfixes stage3)
         make ARCH=arm olddefconfig
 
         make ARCH=arm -j$(nproc) zImage modules dtbs
