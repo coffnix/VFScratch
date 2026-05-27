@@ -28,16 +28,46 @@ mchroot:
 
         install -d /tmp/stage1root/var/git
         sed -i s,'armv7','armv7*',g var/git/meta-repo/kits/lang-kit/dev-lang/go/go-1.26.3.ebuild
+        echo '>=media-libs/freetype-2.14.3 png' >> /etc/portage/package.use
+        echo 'net-firewall/iptables ipv6 nftables' >> /etc/portage/package.use
+        echo '>=x11-libs/cairo-1.18.4 X' >> /etc/portage/package.use
+        echo 'net-firewall/iptables ipv6 nftables' >> /etc/portage/package.use
         rsync -aH --numeric-ids /var/git/ /tmp/stage1root/var/git/
         rsync -aH --numeric-ids /etc/portage/ /tmp/stage1root/etc/portage/
-        echo '>=media-libs/freetype-2.14.3 png' >> /etc/portage/package.use
         epro mix-ins +X +lxqt
+        echo -e '127.0.0.1 localhost\n::1 localhost ip6-localhost ip6-loopback' > /etc/hosts
+        emerge sys-libs/glibc --jobs=3
         emerge dev-libs/libpcre2 --jobs=3
-        emerge dev-libs/gobject-introspection --jobs=3
+        emerge -uD world --jobs=3
+        export FEATURES="-sandbox -usersandbox -pid-sandbox network-sandbox nodoc noman noinfo preserve-libs userpriv"
         emerge dev-libs/glib --jobs=3
-        echo '>=x11-libs/cairo-1.18.4 X' >> /etc/portage/package.use
+        emerge -1 dev-libs/gobject-introspection
+        emerge dev-libs/glib --jobs=3
         emerge dev-lang/vala --jobs=3
         emerge -1 dev-lang/go --jobs=3
+    - none-stage3: |
+        # Do this so we have an updated tree if resuming from here:
+        GIT_SSL_NO_VERIFY=true ego sync
+
+        # Do this before setting ROOT:
+        /usr/sbin/env-update
+        /sbin/ldconfig
+        source /etc/profile
+
+        epro flavor core
+        epro mix-ins -stage1
+
+        export LANG=C
+        export LC_ALL=C
+        export CONFIG_PROTECT="-*"
+        export FEATURES="-pid-sandbox nodoc noman noinfo"
+
+        export GIT_CONFIG_GLOBAL=/dev/null
+        export GIT_DISCOVERY_ACROSS_FILESYSTEM=0
+        export GIT_CEILING_DIRECTORIES=/var/tmp/portage:/tmp:/
+        export GOFLAGS="-buildvcs=false"
+
+
         export ROOT=/tmp/stage1root
         export PORTAGE_CONFIGROOT=/tmp/stage1root
         cp /etc/ego.conf ${ROOT}/etc/ego.conf
@@ -45,17 +75,22 @@ mchroot:
         epro mix-ins -stage1
         epro flavor core
         epro mix-ins +X +lxqt
-        rm ${ROOT}/etc/portage/package.use
+        #rm ${ROOT}/etc/portage/package.use
 
         emerge -1 sys-apps/sysvinit --jobs=3
 
-        USE="-pam" emerge -1 sys-apps/shadow --jobs=3
-        USE="-elogind" emerge -1 sys-libs/pam --jobs=3
+        #USE="-pam" emerge -1 sys-apps/shadow --jobs=3
+        #USE="-elogind" emerge -1 sys-libs/pam --jobs=3
+        echo -e '127.0.0.1 localhost\n::1 localhost ip6-localhost ip6-loopback' > /etc/hosts
+        emerge sys-libs/glibc --jobs=3
         emerge -1 sys-auth/pambase --jobs=3
         emerge dev-libs/libpcre2 --jobs=3
-        emerge dev-libs/gobject-introspection --jobs=3
-        echo '>=media-libs/freetype-2.14.3 png' >> ${ROOT}/etc/portage/package.use
-        echo '>=x11-libs/cairo-1.18.4 X' >> ${ROOT}/etc/portage/package.use
+        emerge -uD world --jobs=3
+        export FEATURES="-sandbox -usersandbox -pid-sandbox network-sandbox nodoc noman noinfo preserve-libs userpriv"
+        emerge dev-libs/glib --jobs=3
+        emerge -1 dev-libs/gobject-introspection
+        #echo '>=media-libs/freetype-2.14.3 png' >> ${ROOT}/etc/portage/package.use
+        #echo '>=x11-libs/cairo-1.18.4 X' >> ${ROOT}/etc/portage/package.use
         emerge dev-libs/glib --jobs=3
         emerge dev-lang/vala --jobs=3
         emerge gnome-base/dconf --jobs=3
