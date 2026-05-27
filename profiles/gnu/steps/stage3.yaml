@@ -5,7 +5,7 @@ mchroot:
   steps:
     - none: |
         # Do this so we have an updated tree if resuming from here:
-        GIT_SSL_NO_VERIFY=true ego sync
+        #GIT_SSL_NO_VERIFY=true ego sync
 
         # Do this before setting ROOT:
         /usr/sbin/env-update
@@ -36,12 +36,13 @@ mchroot:
         rsync -aH --numeric-ids /etc/portage/ /tmp/stage1root/etc/portage/
         epro mix-ins +X +lxqt
         echo -e '127.0.0.1 localhost\n::1 localhost ip6-localhost ip6-loopback' > /etc/hosts
-        emerge sys-libs/glibc --jobs=3
-        emerge dev-libs/libpcre2 --jobs=3
-        emerge -uD world --jobs=3
+        #emerge sys-libs/glibc --jobs=3
+        #emerge dev-libs/libpcre2 --jobs=3
+        #emerge -uD world --jobs=3
         export FEATURES="-sandbox -usersandbox -pid-sandbox network-sandbox nodoc noman noinfo preserve-libs userpriv"
-        emerge dev-libs/glib --jobs=3
-        emerge -1 dev-libs/gobject-introspection
+        emerge $({ find /var/db/pkg -mindepth 2 -maxdepth 2 -type d ! -exec test -f "{}/COUNTER" \; -print; find /var/db/pkg -name COUNTER -exec sh -c 'grep -qx 0 "$1" && dirname "$1"' _ {} \;; } | sed 's|^/var/db/pkg/||; s|-[^-]*$||' | sort -u) --jobs 3
+        #USE="-dbus" emerge dev-libs/glib --jobs=3
+        emerge -1 dev-libs/gobject-introspection --jobs=3 --exclude poppler
         emerge dev-libs/glib --jobs=3
         emerge dev-lang/vala --jobs=3
         emerge -1 dev-lang/go --jobs=3
@@ -87,8 +88,9 @@ mchroot:
         emerge dev-libs/libpcre2 --jobs=3
         emerge -uD world --jobs=3
         export FEATURES="-sandbox -usersandbox -pid-sandbox network-sandbox nodoc noman noinfo preserve-libs userpriv"
-        emerge dev-libs/glib --jobs=3
-        emerge -1 dev-libs/gobject-introspection
+        emerge $({ find /var/db/pkg -mindepth 2 -maxdepth 2 -type d ! -exec test -f "{}/COUNTER" \; -print; find /var/db/pkg -name COUNTER -exec sh -c 'grep -qx 0 "$1" && dirname "$1"' _ {} \;; } | sed 's|^/var/db/pkg/||; s|-[^-]*$||' | sort -u) --jobs 3
+        USE="-dbus" emerge dev-libs/glib --jobs=3
+        emerge -1 dev-libs/gobject-introspection --jobs=3 --exclude poppler
         #echo '>=media-libs/freetype-2.14.3 png' >> ${ROOT}/etc/portage/package.use
         #echo '>=x11-libs/cairo-1.18.4 X' >> ${ROOT}/etc/portage/package.use
         emerge dev-libs/glib --jobs=3
