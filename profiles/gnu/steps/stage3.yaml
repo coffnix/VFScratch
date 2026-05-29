@@ -212,6 +212,7 @@ mchroot:
         cp /etc/shadow /tmp/stage1root/etc
         cp /etc/group /tmp/stage1root/etc
         locale-gen -d /tmp/stage1root
+        > /tmp/stage1root/etc/portage/make.conf
         #  fim arm32
 
         {% elif target == "x86_64-pc-linux-gnu" or target == "x86_64-unknown-linux-gnu" %}
