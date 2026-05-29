@@ -191,16 +191,16 @@ mchroot:
         pwconv
         grpconv
 
-        emerge net-misc/openssh
-        emerge man-db
-        sys-auth/polkit
-        emerge sys-apps/net-tools
-        emerge net-misc/ntp
+        emerge net-misc/openssh --jobs 3
+        emerge man-db --jobs 3
+        sys-auth/polkit --jobs 3
+        emerge sys-apps/net-tools --jobs 3
+        emerge net-misc/ntp --jobs 3
         rc-update add ntp-client
         rc-update add sshd
         echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
-        emerge app-editors/vim
-        emerge sys-kernel/dracut
+        emerge app-editors/vim --jobs 3
+        emerge sys-kernel/dracut --jobs 3
         eselect vi set vim
         export ROOT=
         # root password
