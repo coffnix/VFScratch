@@ -203,6 +203,8 @@ mchroot:
         emerge app-editors/vim --jobs 3
         emerge sys-kernel/dracut --jobs 3
         emerge sys-process/htop --jobs 3
+        emerge app-misc/ca-certificates --jobs 3
+        update-ca-certificates
         eselect vi set vim
         export ROOT=
         # root password
