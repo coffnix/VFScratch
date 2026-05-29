@@ -196,6 +196,7 @@ mchroot:
         sys-auth/polkit --jobs 3
         emerge sys-apps/net-tools --jobs 3
         emerge net-misc/ntp --jobs 3
+        emerge sys-kernel/linux-firmware --jobs 3
         rc-update add ntp-client
         rc-update add sshd
         echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
