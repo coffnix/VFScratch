@@ -37,10 +37,10 @@ mchroot:
         rsync -aH --delete --numeric-ids /var/git/ /tmp/stage1root/var/git/
         rsync -aH --delete --numeric-ids /etc/portage/ /tmp/stage1root/etc/portage/
         echo -e '127.0.0.1 localhost\n::1 localhost ip6-localhost ip6-loopback' > /etc/hosts
+        export FEATURES="-sandbox -usersandbox -pid-sandbox network-sandbox nodoc noman noinfo preserve-libs userpriv"
         emerge sys-libs/glibc --jobs=3
         emerge dev-libs/libpcre2 --jobs=3
         emerge -uD world --jobs=3
-        export FEATURES="-sandbox -usersandbox -pid-sandbox network-sandbox nodoc noman noinfo preserve-libs userpriv"
         emerge $({ find /var/db/pkg -mindepth 2 -maxdepth 2 -type d ! -exec test -f "{}/COUNTER" \; -print; find /var/db/pkg -name COUNTER -exec sh -c 'grep -qx 0 "$1" && dirname "$1"' _ {} \;; } | sed 's|^/var/db/pkg/||; s|-[^-]*$||' | sort -u) --jobs 3
         USE="-dbus" emerge dev-libs/glib --jobs=3
         emerge -1 dev-libs/gobject-introspection --jobs=3 --exclude poppler
@@ -50,7 +50,7 @@ mchroot:
     - none-stage3: |
         # Do this so we have an updated tree if resuming from here:
         echo -e '[global]\nrelease = mark-31\npython_kit_profile = mark\nsync_base_url = https://github.com/macaroni-os/{repo}' > /etc/ego.conf
-        GIT_SSL_NO_VERIFY=true ego sync
+        #GIT_SSL_NO_VERIFY=true ego sync
 
         # Do this before setting ROOT:
         /usr/sbin/env-update
@@ -78,32 +78,29 @@ mchroot:
         epro mix-ins -stage1
         epro flavor core
         epro mix-ins +X +lxqt
-        #rm ${ROOT}/etc/portage/package.use
 
         emerge -1 sys-apps/sysvinit --jobs=3
 
-        #USE="-pam" emerge -1 sys-apps/shadow --jobs=3
-        #USE="-elogind" emerge -1 sys-libs/pam --jobs=3
+        USE="-pam" emerge -1 sys-apps/shadow --jobs=3
+        USE="-elogind" emerge -1 sys-libs/pam --jobs=3
         echo -e '127.0.0.1 localhost\n::1 localhost ip6-localhost ip6-loopback' > /etc/hosts
         emerge sys-libs/glibc --jobs=3
         emerge -1 sys-auth/pambase --jobs=3
         emerge dev-libs/libpcre2 --jobs=3
-        emerge -uD world --jobs=3
         export FEATURES="-sandbox -usersandbox -pid-sandbox network-sandbox nodoc noman noinfo preserve-libs userpriv"
-        emerge $({ find /var/db/pkg -mindepth 2 -maxdepth 2 -type d ! -exec test -f "{}/COUNTER" \; -print; find /var/db/pkg -name COUNTER -exec sh -c 'grep -qx 0 "$1" && dirname "$1"' _ {} \;; } | sed 's|^/var/db/pkg/||; s|-[^-]*$||' | sort -u) --jobs 3
+        emerge dev-lang/vala --jobs=3
+        emerge -uD world --jobs=3
         USE="-dbus" emerge dev-libs/glib --jobs=3
         emerge -1 dev-libs/gobject-introspection --jobs=3 --exclude poppler
         echo '>=media-libs/freetype-2.14.3 png' >> ${ROOT}/etc/portage/package.use
         echo '>=x11-libs/cairo-1.18.4 X' >> ${ROOT}/etc/portage/package.use
         emerge dev-libs/glib --jobs=3
-        emerge dev-lang/vala --jobs=3
         emerge gnome-base/dconf --jobs=3
         emerge -1 sys-auth/elogind --jobs=3
         emerge -1 sys-apps/shadow --jobs=3
         emerge -1 sys-apps/openrc --jobs=3
 
     - none-final: |
-        exit
         {% if target == "armv7a-unknown-linux-gnueabihf" %}
         install -d /var/overlay/overlay-local/profiles
         install -d /var/overlay/overlay-local/metadata
@@ -129,6 +126,7 @@ mchroot:
           'auto-sync = no' \
           'priority = 10' \
           > /etc/portage/repos.conf/overlay-local
+        export ROOT=/tmp/stage1root
 
         wget --no-check-certificate -O /var/overlay/overlay-local/sys-boot/u-boot-bananapi/u-boot-bananapi-2026.04.ebuild https://raw.githubusercontent.com/coffnix/coffnix-ebuilds/refs/heads/master/sys-boot/u-boot-bananapi/u-boot-bananapi-2026.04.ebuild
 
@@ -139,9 +137,10 @@ mchroot:
         emerge sys-libs/ncurses
         emerge dev-embedded/u-boot-tools
 
+        export PORTAGE_CONFIGROOT=/tmp/stage1root
         cd ${ROOT}/usr/src/linux
 
-        #make ARCH=arm sunxi_defconfig
+        make ARCH=arm sunxi_defconfig
         make ARCH=arm olddefconfig
 
         make ARCH=arm -j$(nproc) zImage modules dtbs
@@ -181,8 +180,40 @@ mchroot:
         ${ROOT}/usr/bin/mkimage -C none -A arm -T script \
           -d ${ROOT}/boot/boot.cmd \
           ${ROOT}/boot/boot.scr
+        emerge gcc kmod --jobs 3
+        gcc-config 1
+        env-update
+        ldconfig
+        find /usr/lib -type f -name '*.so*' -exec chmod 755 {} \;
+        find /lib -type f -name '*.so*' -exec chmod 755 {} \;
+        export ROOT=/tmp/stage1root
+        export PORTAGE_CONFIGROOT=/tmp/stage1root
+        pwconv
+        grpconv
+
+        emerge net-misc/openssh
+        emerge man-db
+        sys-auth/polkit
+        emerge sys-apps/net-tools
+        emerge net-misc/ntp
+        rc-update add ntp-client
+        rc-update add sshd
+        echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
+        emerge app-editors/vim
+        eselect vi set vim
+        export ROOT=
+        # root password
+        echo -e "root\nroot" | passwd root
+        chage -M 99999 -E -1 -I -1 root
+        chage -d 0 root
+        cp /etc/passwd /tmp/stage1root/etc
+        cp /etc/shadow /tmp/stage1root/etc
+        cp /etc/group /tmp/stage1root/etc
+        locale-gen -d /tmp/stage1root
+        #  fim arm32
 
         {% elif target == "x86_64-pc-linux-gnu" or target == "x86_64-unknown-linux-gnu" %}
+
         ego profile mix-ins +kernel-sid
 
         emerge sys-kernel/debian-sources:sid
