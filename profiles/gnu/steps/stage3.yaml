@@ -140,7 +140,7 @@ mchroot:
         export PORTAGE_CONFIGROOT=/tmp/stage1root
         cd ${ROOT}/usr/src/linux
 
-        make ARCH=arm sunxi_defconfig
+        #make ARCH=arm sunxi_defconfig
         make ARCH=arm olddefconfig
 
         make ARCH=arm -j$(nproc) zImage modules dtbs
