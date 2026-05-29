@@ -202,6 +202,7 @@ mchroot:
         echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
         emerge app-editors/vim --jobs 3
         emerge sys-kernel/dracut --jobs 3
+        emerge sys-process/htop --jobs 3
         eselect vi set vim
         export ROOT=
         # root password
