@@ -200,6 +200,7 @@ mchroot:
         rc-update add sshd
         echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
         emerge app-editors/vim
+        emerge sys-kernel/dracut
         eselect vi set vim
         export ROOT=
         # root password
