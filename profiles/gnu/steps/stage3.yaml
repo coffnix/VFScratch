@@ -207,6 +207,7 @@ mchroot:
         emerge dev-libs/icu --jobs 3
         emerge app-portage/genlop --jobs 3
         ldconfig
+        emerge sys-devel/automake sys-devel/autoconf sys-devel/libtool --jobs 3
         emerge x11-misc/shared-mime-info --jobs 3
         update-ca-certificates
         update-mime-database /usr/share/mime
