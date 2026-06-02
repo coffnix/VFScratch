@@ -511,7 +511,7 @@ mchroot:
         install -d /var/db/pkg/app-admin/ego-${EGO_VERSION}
 
         GIT_SSL_NO_VERIFY=true ego sync
-    - none-final: |
+    - none-base: |
         export FEATURES="-pid-sandbox nodoc noman noinfo"
         export CONFIG_PROTECT="-* /etc/ego.conf"
         {% if target == "armv7a-unknown-linux-gnueabihf" %}
@@ -547,7 +547,7 @@ mchroot:
         /usr/sbin/env-update
         source /etc/profile
         export CONFIG_PROTECT="-*"
-        export FEATURES="-pid-sandbox nodoc noman noinfo"
+        export FEATURES="-pid-sandbox -sandbox nodoc noman noinfo"
         test -e /etc/ld.so.conf
         test -e /etc/ld.so.cache
 
@@ -607,6 +607,9 @@ mchroot:
         locale-gen
         emerge sys-libs/glibc --jobs 3
         emerge -D sys-libs/libxcrypt
+    - none-final: |
+        export FEATURES="-pid-sandbox -sandbox nodoc noman noinfo"
+        export CONFIG_PROTECT="-*"
         emerge dev-python/libxml2-python
         USE="-pam" emerge -D sys-apps/shadow
         USE="-elogind" emerge -1 sys-libs/pam
