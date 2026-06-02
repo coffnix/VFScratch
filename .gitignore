@@ -21,3 +21,4 @@ vfscratch/__pycache__
 packages/**
 stage1.tar
 stage1.tar
+newroot/**
