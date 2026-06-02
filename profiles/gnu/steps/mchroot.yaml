@@ -530,6 +530,11 @@ mchroot:
         # This allows all files in /etc/ to be directly overwritten.
         export CONFIG_PROTECT="-*"
         # This will ensure base files for env-update are in place. -build since fs already exists.
+        {% if target == "i686-pc-linux-gnu" %}
+        mkdir -p /var/overlay ; cd /var/overlay
+        GIT_SSL_NO_VERIFY=true git clone https://github.com/coffnix/coffnix-ebuilds.git
+        mv /var/overlay/coffnix-ebuilds /var/overlay/overlay-local
+        {% endif %}
         USE="-build" emerge --nodeps baselayout
         /sbin/ldconfig
         /usr/sbin/env-update

@@ -12,6 +12,7 @@ from vfscratch.common import Sourcer
 
 CLI_CONFIG = {
 	"build": {"positional": True},
+	"target": {"positional": True},
 	"action": {"positional": True},
 	"sources": {"positional": True, "nargs": "?"}
 }
@@ -34,7 +35,7 @@ if __name__ == "__main__":
 		print("CLFS not found in environment; using current working directory.")
 		os.environ["CLFS"] = os.getcwd()
 	args = parse_args()
-	sourcer = Sourcer(args.build, os.environ["CLFS"])
+	sourcer = Sourcer(args.build, os.environ["CLFS"], args.target)
 	if args.action == "unpack":
 		sources = args.sources.split(",")
 		sourcer.unpack(sources)

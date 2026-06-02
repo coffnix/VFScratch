@@ -23,6 +23,15 @@ def expand_url(in_url):
 		return in_url, os.path.basename(in_url)
 
 
+def is_source_archive(filename):
+	return (
+		filename.endswith(".tar.xz")
+		or filename.endswith(".tar.bz2")
+		or filename.endswith(".tar.gz")
+		or filename.endswith(".zip")
+	)
+
+
 class Sourcer:
 	"""
 	This class is responsible for parsing sources.yaml and performing various actions, such as downloading all source code
@@ -31,10 +40,18 @@ class Sourcer:
 
 	sources = {}
 
-	def __init__(self, build, clfs_path):
+	def __init__(self, build, clfs_path, target):
 		self.clfs_path = clfs_path
 		self.build = build
-		infile = os.path.join(clfs_path, "profiles", build, "sources.yaml")
+		self.target = target
+
+		infile = os.path.join(
+			clfs_path,
+			"profiles",
+			build,
+			f"sources-{target}.yaml"
+		)
+
 		os.makedirs(os.path.join(clfs_path, "sources"), exist_ok=True)
 
 		with open(infile, "r") as myf:
@@ -181,6 +198,8 @@ class Sourcer:
 			return out
 
 	def fetch(self):
+		min_archive_size = 10240
+
 		for key, val in self.sources.items():
 			print(f"Fetching {key}")
 
@@ -199,13 +218,60 @@ class Sourcer:
 					url = in_url
 					outfile = os.path.basename(url)
 
-				if not os.path.exists(
-					f"{self.clfs_path}/sources/{outfile}"
+				outpath = os.path.join(
+					self.clfs_path,
+					"sources",
+					outfile
+				)
+
+				tmpfile = f"{outfile}.tmp"
+				tmppath = os.path.join(
+					self.clfs_path,
+					"sources",
+					tmpfile
+				)
+
+				if (
+					os.path.exists(outpath)
+					and is_source_archive(outfile)
+					and os.path.getsize(outpath) < min_archive_size
 				):
+					print(
+						f"Removing suspiciously small archive: "
+						f"{outfile} ({os.path.getsize(outpath)} bytes)"
+					)
+					os.remove(outpath)
+
+				if not os.path.exists(outpath):
+					if os.path.exists(tmppath):
+						os.remove(tmppath)
+
 					result = os.system(
 						f"( cd {self.clfs_path}/sources && "
-						f"wget -O {outfile} -nc {url})"
+						f"wget -O {tmpfile} {url})"
 					)
 
 					if result != 0:
+						if os.path.exists(tmppath):
+							os.remove(tmppath)
 						sys.exit(1)
+
+					if (
+						is_source_archive(outfile)
+						and (
+							not os.path.exists(tmppath)
+							or os.path.getsize(tmppath) < min_archive_size
+						)
+					):
+						if os.path.exists(tmppath):
+							print(
+								f"Downloaded archive too small: "
+								f"{outfile} ({os.path.getsize(tmppath)} bytes)"
+							)
+							os.remove(tmppath)
+						else:
+							print(f"Downloaded archive missing: {outfile}")
+
+						sys.exit(1)
+
+					os.rename(tmppath, outpath)

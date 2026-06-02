@@ -105,7 +105,11 @@ class Builder:
 		self.steps = steps
 		self.loader = jinja2.FileSystemLoader(os.path.join(inpath, "templates"))
 		self.jinja = jinja2.Environment(loader=self.loader)
-		self.sourcer = Sourcer(self.build, os.path.join(os.environ["CLFS"]))
+		self.sourcer = Sourcer(
+			self.build,
+			os.path.join(os.environ["CLFS"]),
+			self.arch_name
+		)
 
 		with open(os.path.join(os.environ["CLFS"], "profiles", self.build, "arches", f"{arch}.yaml")) as myarch:
 			self.arch = safe_load(myarch.read())["arch"]
