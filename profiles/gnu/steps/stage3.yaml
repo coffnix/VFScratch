@@ -108,10 +108,10 @@ mchroot:
         USE="-elogind" emerge -1 sys-libs/pam --jobs=3
         echo -e '127.0.0.1 localhost\n::1 localhost ip6-localhost ip6-loopback' > /etc/hosts
         emerge sys-libs/glibc --jobs=3
+        emerge dev-lang/vala --jobs=3
         emerge -1 sys-auth/pambase --jobs=3
         emerge dev-libs/libpcre2 --jobs=3
         export FEATURES="-sandbox -usersandbox -pid-sandbox network-sandbox nodoc noman noinfo preserve-libs userpriv"
-        emerge dev-lang/vala --jobs=3
         emerge -uD world --jobs=3
         USE="-dbus" emerge dev-libs/glib --jobs=3
         emerge -1 dev-libs/gobject-introspection --jobs=3 --exclude poppler
