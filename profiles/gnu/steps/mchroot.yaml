@@ -487,7 +487,7 @@ mchroot:
 
         cat > /etc/ego.conf << "EGO_EOF"
         [global]
-        release = mark-31
+        release = mark-iii
         python_kit_profile = mark
         sync_base_url = https://github.com/macaroni-os/{repo}
         EGO_EOF
@@ -501,6 +501,9 @@ mchroot:
         {% if target == "armv7a-unknown-linux-gnueabihf" %}
         epro arch arm-32bit
         epro subarch banana-pi-a7
+        {% elif target == "i686-pc-linux-gnu" %}
+        epro arch x86-32bit
+        epro subarch pentium4
         {% elif ego_arch is defined and ego_subarch is defined %}
         epro arch {{ego_arch}}
         epro subarch {{ego_subarch}}
@@ -563,9 +566,10 @@ mchroot:
         emerge sys-apps/locale-gen
         echo -e 'en_US.UTF-8 UTF-8\nC.UTF-8 UTF-8' > /etc/locale.gen
         locale-gen
-        emerge -1 sys-libs/libxcrypt
+        emerge sys-libs/glibc --jobs 3
+        emerge -D sys-libs/libxcrypt
         emerge dev-python/libxml2-python
-        USE="-pam" emerge -1 sys-apps/shadow
+        USE="-pam" emerge -D sys-apps/shadow
         USE="-elogind" emerge -1 sys-libs/pam
         emerge --jobs=3 util-linux
         emerge sys-apps/attr
