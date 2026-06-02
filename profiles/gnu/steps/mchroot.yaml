@@ -532,6 +532,7 @@ mchroot:
         # This will ensure base files for env-update are in place. -build since fs already exists.
         {% if target == "i686-pc-linux-gnu" %}
         mkdir -p /var/overlay ; cd /var/overlay
+        rm -rf /var/overlay/overlay-local /var/overlay/coffnix-ebuilds
         GIT_SSL_NO_VERIFY=true git clone https://github.com/coffnix/coffnix-ebuilds.git
         mv /var/overlay/coffnix-ebuilds /var/overlay/overlay-local
         printf '%s\n' \
@@ -576,12 +577,23 @@ mchroot:
         emerge --jobs=3 app-misc/ca-certificates
         update-ca-certificates || true
         cat > /etc/portage/make.conf << "MKCF_EOF2"
-        FEATURES="-pid-sandbox"
+        FEATURES="-pid-sandbox -sandbox"
         FETCHCOMMAND="wget --no-check-certificate -t 3 -T 60 --passive-ftp -O \"\${DISTDIR}/\${FILE}\" \"\${URI}\""
         RESUMECOMMAND="wget --no-check-certificate -c -t 3 -T 60 --passive-ftp -O \"\${DISTDIR}/\${FILE}\" \"\${URI}\""
+        MKCF_EOF2
+        {% if target == "armv7a-unknown-linux-gnueabihf" %}
         PYTHON_TARGETS="python3_9"
         PYTHON_SINGLE_TARGET="python3_9"
-        MKCF_EOF2
+        eselect python set python3.9
+        {% elif target == "i686-pc-linux-gnu" %}
+        PYTHON_TARGETS="python3_10"
+        PYTHON_SINGLE_TARGET="python3_10"
+        eselect python set python3.10
+        emerge sys-libs/libxcrypt
+        {% elif ego_arch is defined and ego_subarch is defined %}
+        PYTHON_TARGETS="python3_9"
+        PYTHON_SINGLE_TARGET="python3_9"
+        {% endif %}
         echo 'sys-apps/kmod lzma pkcs7 python tools zlib zstd' > /etc/portage/package.use
         echo 'sys-apps/attr nls split-usr static-libs ' >> /etc/portage/package.use
         echo 'sys-apps/acl nls split-usr' >> /etc/portage/package.use
