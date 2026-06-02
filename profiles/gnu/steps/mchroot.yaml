@@ -613,9 +613,6 @@ mchroot:
         locale-gen
         emerge sys-libs/glibc --jobs 3
         emerge -D sys-libs/libxcrypt
-    - none-final: |
-        export FEATURES="-pid-sandbox -sandbox nodoc noman noinfo"
-        export CONFIG_PROTECT="-*"
         echo '=net-misc/curl-8.18.0' > /etc/portage/package.mask
         emerge dev-python/libxml2-python
         USE="-pam" emerge -D sys-apps/shadow
@@ -630,6 +627,9 @@ mchroot:
         emerge --jobs=3 bash gcc
         gcc-config 1
         emerge -1 sys-auth/pambase
+    - none-final: |
+        export FEATURES="-pid-sandbox -sandbox nodoc noman noinfo"
+        export CONFIG_PROTECT="-*"
         emerge -1 sys-auth/elogind
         emerge -1 sys-apps/shadow
 
