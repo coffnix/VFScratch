@@ -1,4 +1,5 @@
 import os
+import shlex
 import sys
 
 from yaml import safe_load
@@ -38,21 +39,24 @@ class Sourcer:
 	or accessing metadata for a particular set of sources.
 	"""
 
-	sources = {}
-
-	def __init__(self, build, clfs_path, target):
+	def __init__(self, build, repo_path, clfs_path, target):
+		self.repo_path = repo_path
 		self.clfs_path = clfs_path
 		self.build = build
 		self.target = target
+		self.sources = {}
+
+		self.sources_path = os.path.join(self.repo_path, "sources")
+		self.patches_path = os.path.join(self.repo_path, "patches")
 
 		infile = os.path.join(
-			clfs_path,
+			self.repo_path,
 			"profiles",
 			build,
 			f"sources-{target}.yaml"
 		)
 
-		os.makedirs(os.path.join(clfs_path, "sources"), exist_ok=True)
+		os.makedirs(self.sources_path, exist_ok=True)
 
 		with open(infile, "r") as myf:
 			for top_name, src_cats in safe_load(myf.read()).items():
@@ -115,12 +119,12 @@ class Sourcer:
 						self.sources[name] = pkginfo
 
 	def unpack(self, sources):
-		os.makedirs(os.path.join(os.environ["CLFS"], "build"), exist_ok=True)
+		os.makedirs(os.path.join(self.clfs_path, "build"), exist_ok=True)
 
 		if "," not in sources and "package" in self.sources[sources]:
 			package_name = self.sources[sources]["package"]
 			package_path = os.path.join(
-				os.environ["CLFS"],
+				self.clfs_path,
 				"packages",
 				package_name
 			)
@@ -154,13 +158,14 @@ class Sourcer:
 
 				for in_url in self.sources[source]["sources"]:
 					url, tarball = expand_url(in_url)
+					source_archive = os.path.join(self.sources_path, tarball)
 
 					if tarball.endswith(".zip"):
 						out += (
 							f"cd ${{CLFS}}/build && "
 							f"rm -rf {source}-{self.sources[source]['version']} && "
 							f"mkdir -p {source}-{self.sources[source]['version']} && "
-							f"python3 -m zipfile -e ${{CLFS}}/sources/{tarball} "
+							f"python3 -m zipfile -e {shlex.quote(source_archive)} "
 							f"{source}-{self.sources[source]['version']} && "
 							f"firstdir=$(find {source}-{self.sources[source]['version']} "
 							f"-mindepth 1 -maxdepth 1 -type d | head -n1); "
@@ -173,7 +178,7 @@ class Sourcer:
 					else:
 						out += (
 							f"cd ${{CLFS}}/build && "
-							f"tar xf ${{CLFS}}/sources/{tarball}\n"
+							f"tar xf {shlex.quote(source_archive)}\n"
 						)
 
 					out += (
@@ -191,8 +196,9 @@ class Sourcer:
 
 			if "patches" in first_source:
 				for patch in first_source["patches"]:
+					patch_path = os.path.join(self.patches_path, patch)
 					out += (
-						f"cat ${{CLFS}}/patches/{patch} | patch -p1\n"
+						f"cat {shlex.quote(patch_path)} | patch -p1\n"
 					)
 
 			return out
@@ -219,15 +225,13 @@ class Sourcer:
 					outfile = os.path.basename(url)
 
 				outpath = os.path.join(
-					self.clfs_path,
-					"sources",
+					self.sources_path,
 					outfile
 				)
 
 				tmpfile = f"{outfile}.tmp"
 				tmppath = os.path.join(
-					self.clfs_path,
-					"sources",
+					self.sources_path,
 					tmpfile
 				)
 
@@ -247,8 +251,8 @@ class Sourcer:
 						os.remove(tmppath)
 
 					result = os.system(
-						f"( cd {self.clfs_path}/sources && "
-						f"wget -O {tmpfile} {url})"
+						f"( cd {shlex.quote(self.sources_path)} && "
+						f"wget -O {shlex.quote(tmpfile)} {shlex.quote(url)})"
 					)
 
 					if result != 0:

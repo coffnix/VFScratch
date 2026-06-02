@@ -71,7 +71,7 @@ class Builder:
 
 	def state_paths(self, package_name):
 		state_dir = os.path.join(
-			os.environ["CLFS"],
+			self.clfs_path,
 			".vfscratch-state",
 			self.build,
 			self.arch_name,
@@ -99,19 +99,22 @@ class Builder:
 			f.write(f"status={status}\n")
 			f.write(f"date={datetime.now().isoformat()}\n")
 
-	def __init__(self, inpath, build, arch, steps):
+	def __init__(self, repo_path, clfs_path, build, arch, steps):
+		self.repo_path = repo_path
+		self.clfs_path = clfs_path
 		self.build = build
 		self.arch_name = arch
 		self.steps = steps
-		self.loader = jinja2.FileSystemLoader(os.path.join(inpath, "templates"))
+		self.loader = jinja2.FileSystemLoader(os.path.join(repo_path, "templates"))
 		self.jinja = jinja2.Environment(loader=self.loader)
 		self.sourcer = Sourcer(
 			self.build,
-			os.path.join(os.environ["CLFS"]),
+			self.repo_path,
+			self.clfs_path,
 			self.arch_name
 		)
 
-		with open(os.path.join(os.environ["CLFS"], "profiles", self.build, "arches", f"{arch}.yaml")) as myarch:
+		with open(os.path.join(self.repo_path, "profiles", self.build, "arches", f"{arch}.yaml")) as myarch:
 			self.arch = safe_load(myarch.read())["arch"]
 
 		cflags = self.arch.get("cflags", "")
@@ -122,7 +125,7 @@ class Builder:
 		self.arch["gcc_fpu"] = parse_cflag_value(cflags, "-mfpu")
 		self.arch["gcc_float"] = parse_cflag_value(cflags, "-mfloat-abi")
 
-		with open(os.path.join(inpath, "profiles", self.build, "steps", f"{steps}.yaml"), "r") as myf:
+		with open(os.path.join(self.repo_path, "profiles", self.build, "steps", f"{steps}.yaml"), "r") as myf:
 			for rule_name, rule in safe_load(myf.read()).items():
 				if "defaults" in rule:
 					defaults = rule["defaults"].copy()

@@ -9,11 +9,55 @@ if os.path.exists(gitpath):
 
 from vfscratch.builder import Builder
 
+
+def validate_project_root(repo_path):
+	required = [
+		"bin/sourcer",
+		"bin/builder",
+		"vfscratch/common.py",
+		"vfscratch/builder.py",
+		".gitignore"
+	]
+
+	missing = []
+
+	for item in required:
+		if not os.path.exists(os.path.join(repo_path, item)):
+			missing.append(item)
+
+	if missing:
+		print("This command must be run from the VFScratch project root.")
+		print("Enter the project directory first, then run the command again.")
+		print("Example:")
+		print("  cd /path/to/VFScratch")
+		print("  export CLFS=$(pwd)/newroot")
+		print("  bin/builder gnu x86-32bit cross_tools")
+		print("")
+		print("Missing required project files:")
+		for item in missing:
+			print(f"  {item}")
+		sys.exit(1)
+
+
 if __name__ == "__main__":
+	repo_path = os.getcwd()
+	validate_project_root(repo_path)
+
 	if "CLFS" not in os.environ:
-		print("CLFS not found in environment; using current working directory.")
-		os.environ["CLFS"] = os.getcwd()
-	mybuilder = Builder(os.path.join(os.environ["CLFS"]), build=sys.argv[1], arch=sys.argv[2], steps=sys.argv[3])
+		print("CLFS not found in environment; using current working directory/newroot.")
+		print("Recommended:")
+		print("  export CLFS=$(pwd)/newroot")
+		os.environ["CLFS"] = os.path.join(repo_path, "newroot")
+
+	os.makedirs(os.environ["CLFS"], exist_ok=True)
+
+	mybuilder = Builder(
+		repo_path,
+		os.environ["CLFS"],
+		build=sys.argv[1],
+		arch=sys.argv[2],
+		steps=sys.argv[3]
+	)
 
 
 # vim: ts=4 sw=4 noet

@@ -52,12 +52,12 @@ Before launching the isolated LXD bootstrap environment, you must first clone th
 
   $ cd ~/VFScratch
 
-  $ export CLFS=~/VFScratch
+  $ export CLFS=~/VFScratch/newroot
   $ bin/sourcer gnu arm-32bit fetch
 
 build ARM 32-bit cross toolchain
 ::
-  $ export CLFS=~/VFScratch
+  $ export CLFS=~/VFScratch/newroot
   $ bin/builder gnu arm-32bit cross_tools
 
 build bootstrap host tools
@@ -67,17 +67,17 @@ build bootstrap host tools
 
 create mchroot environment
 ::
-  $ export CLFS=~/VFScratch
+  $ export CLFS=~/VFScratch/newroot
   $ bin/builder gnu arm-32bit mchroot
 
 generate initial stage1 filesystem
 ::
-  $ export CLFS=~/VFScratch
+  $ export CLFS=~/VFScratch/newroot
   $ bin/builder gnu arm-32bit stage1
 
 generate final stage3 filesystem
 ::
-  $ export CLFS=~/VFScratch
+  $ export CLFS=~/VFScratch/newroot
   $ bin/builder gnu arm-32bit stage3
 
 
