@@ -47,6 +47,7 @@ class Sourcer:
 		self.sources = {}
 
 		self.sources_path = os.path.join(self.repo_path, "sources")
+		self.clfs_sources_path = os.path.join(self.clfs_path, "sources")
 		self.patches_path = os.path.join(self.repo_path, "patches")
 
 		infile = os.path.join(
@@ -57,6 +58,7 @@ class Sourcer:
 		)
 
 		os.makedirs(self.sources_path, exist_ok=True)
+		os.makedirs(self.clfs_sources_path, exist_ok=True)
 
 		with open(infile, "r") as myf:
 			for top_name, src_cats in safe_load(myf.read()).items():
@@ -118,8 +120,21 @@ class Sourcer:
 
 						self.sources[name] = pkginfo
 
+	def sync_sources_to_clfs(self):
+		os.makedirs(self.clfs_sources_path, exist_ok=True)
+
+		result = os.system(
+			f"rsync -a --delete "
+			f"{shlex.quote(self.sources_path)}/ "
+			f"{shlex.quote(self.clfs_sources_path)}/"
+		)
+
+		if result != 0:
+			sys.exit(1)
+
 	def unpack(self, sources):
 		os.makedirs(os.path.join(self.clfs_path, "build"), exist_ok=True)
+		self.sync_sources_to_clfs()
 
 		if "," not in sources and "package" in self.sources[sources]:
 			package_name = self.sources[sources]["package"]
@@ -158,14 +173,14 @@ class Sourcer:
 
 				for in_url in self.sources[source]["sources"]:
 					url, tarball = expand_url(in_url)
-					source_archive = os.path.join(self.sources_path, tarball)
+					source_archive = os.path.join("${CLFS}", "sources", tarball)
 
 					if tarball.endswith(".zip"):
 						out += (
 							f"cd ${{CLFS}}/build && "
 							f"rm -rf {source}-{self.sources[source]['version']} && "
 							f"mkdir -p {source}-{self.sources[source]['version']} && "
-							f"python3 -m zipfile -e {shlex.quote(source_archive)} "
+							f"python3 -m zipfile -e {source_archive} "
 							f"{source}-{self.sources[source]['version']} && "
 							f"firstdir=$(find {source}-{self.sources[source]['version']} "
 							f"-mindepth 1 -maxdepth 1 -type d | head -n1); "
@@ -178,7 +193,7 @@ class Sourcer:
 					else:
 						out += (
 							f"cd ${{CLFS}}/build && "
-							f"tar xf {shlex.quote(source_archive)}\n"
+							f"tar xf {source_archive}\n"
 						)
 
 					out += (
@@ -279,3 +294,5 @@ class Sourcer:
 						sys.exit(1)
 
 					os.rename(tmppath, outpath)
+
+		self.sync_sources_to_clfs()
