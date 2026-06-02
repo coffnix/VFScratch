@@ -582,17 +582,23 @@ mchroot:
         RESUMECOMMAND="wget --no-check-certificate -c -t 3 -T 60 --passive-ftp -O \"\${DISTDIR}/\${FILE}\" \"\${URI}\""
         MKCF_EOF2
         {% if target == "armv7a-unknown-linux-gnueabihf" %}
+        cat > /etc/portage/make.conf << "MKCF_EOF3"
         PYTHON_TARGETS="python3_9"
         PYTHON_SINGLE_TARGET="python3_9"
+        MKCF_EOF3
         eselect python set python3.9
         {% elif target == "i686-pc-linux-gnu" %}
+        cat > /etc/portage/make.conf << "MKCF_EOF3"
         PYTHON_TARGETS="python3_10"
         PYTHON_SINGLE_TARGET="python3_10"
+        MKCF_EOF3
         eselect python set python3.10
         emerge sys-libs/libxcrypt
         {% elif ego_arch is defined and ego_subarch is defined %}
+        cat > /etc/portage/make.conf << "MKCF_EOF3"
         PYTHON_TARGETS="python3_9"
         PYTHON_SINGLE_TARGET="python3_9"
+        MKCF_EOF3
         {% endif %}
         echo 'sys-apps/kmod lzma pkcs7 python tools zlib zstd' > /etc/portage/package.use
         echo 'sys-apps/attr nls split-usr static-libs ' >> /etc/portage/package.use
@@ -610,6 +616,7 @@ mchroot:
     - none-final: |
         export FEATURES="-pid-sandbox -sandbox nodoc noman noinfo"
         export CONFIG_PROTECT="-*"
+        echo '=net-misc/curl-8.18.0' > /etc/portage/package.mask
         emerge dev-python/libxml2-python
         USE="-pam" emerge -D sys-apps/shadow
         USE="-elogind" emerge -1 sys-libs/pam
