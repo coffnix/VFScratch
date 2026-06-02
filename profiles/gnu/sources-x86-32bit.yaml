@@ -18,8 +18,8 @@ sources:
           version: 14.3.0
       - glibc:
           version: 2.41
-          #patches:
-          #  - glibc-2.43-linux-7-open_tree_clone.patch
+          patches:
+            - glibc-2.43-linux-7-open_tree_clone.patch
       - ncurses:
           version: 6.5
           ext: gz
