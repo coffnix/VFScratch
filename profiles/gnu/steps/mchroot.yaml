@@ -534,6 +534,12 @@ mchroot:
         mkdir -p /var/overlay ; cd /var/overlay
         GIT_SSL_NO_VERIFY=true git clone https://github.com/coffnix/coffnix-ebuilds.git
         mv /var/overlay/coffnix-ebuilds /var/overlay/overlay-local
+        printf '%s\n' \
+          '[overlay-local]' \
+          'location = /var/overlay/overlay-local' \
+          'auto-sync = no' \
+          'priority = 10' \
+          > /etc/portage/repos.conf/overlay-local
         {% endif %}
         USE="-build" emerge --nodeps baselayout
         /sbin/ldconfig
