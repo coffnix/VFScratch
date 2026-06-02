@@ -485,12 +485,28 @@ mchroot:
 
         cp etc/*.conf* /etc/
 
+        {% if target == "armv7a-unknown-linux-gnueabihf" %}
+        cat > /etc/ego.conf << "EGO_EOF"
+        [global]
+        release = mark-31
+        python_kit_profile = mark
+        sync_base_url = https://github.com/macaroni-os/{repo}
+        EGO_EOF
+        {% elif target == "i686-pc-linux-gnu" %}
         cat > /etc/ego.conf << "EGO_EOF"
         [global]
         release = mark-iii
         python_kit_profile = mark
         sync_base_url = https://github.com/macaroni-os/{repo}
         EGO_EOF
+        {% elif ego_arch is defined and ego_subarch is defined %}
+        cat > /etc/ego.conf << "EGO_EOF"
+        [global]
+        release = mark-iii
+        python_kit_profile = mark
+        sync_base_url = https://github.com/macaroni-os/{repo}
+        EGO_EOF
+        {% endif %}
 
         install -d /var/db/pkg/app-admin/ego-${EGO_VERSION}
 
