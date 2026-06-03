@@ -122,6 +122,8 @@ mchroot:
         emerge -1 sys-auth/elogind --jobs=3
         emerge -1 sys-apps/shadow --jobs=3
         emerge -1 sys-apps/openrc --jobs=3
+        emerge gcc
+        emerge app-arch/xz-utils
 
     - none-final: |
         {% if target == "armv7a-unknown-linux-gnueabihf" %}
@@ -286,16 +288,16 @@ mchroot:
         find arch/arm64/boot/dts/ -type f -name '*.dtb' \
           -exec install -m 0644 {} ${ROOT}/boot/dtb/ \;
 
-        {% else %}
-        emerge sys-kernel/vanilla-sources
+        #{% else %}
+        #emerge sys-kernel/vanilla-sources
 
-        cd ${ROOT}/usr/src/linux
+        #cd ${ROOT}/usr/src/linux
 
-        make olddefconfig
+        #make olddefconfig
 
-        make -j$(nproc)
+        #make -j$(nproc)
 
-        make INSTALL_MOD_PATH=${ROOT} modules_install
+        #make INSTALL_MOD_PATH=${ROOT} modules_install
 
-        install -d ${ROOT}/boot
+        #install -d ${ROOT}/boot
         {% endif %}
