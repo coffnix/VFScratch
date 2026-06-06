@@ -122,8 +122,11 @@ mchroot:
         emerge -1 sys-auth/elogind --jobs=3
         emerge -1 sys-apps/shadow --jobs=3
         emerge -1 sys-apps/openrc --jobs=3
-        emerge gcc
-        emerge app-arch/xz-utils
+        emerge gcc --jobs=3
+        emerge sys-libs/glibc --jobs=3
+        emerge app-arch/xz-utils --jobs=3
+        emerge app-text/poppler --jobs=3
+        emerge sys-devel/binutils sys-devel/libtool sys-devel/make sys-devel/pkgconf --jobs=3
 
     - none-final: |
         {% if target == "armv7a-unknown-linux-gnueabihf" %}
