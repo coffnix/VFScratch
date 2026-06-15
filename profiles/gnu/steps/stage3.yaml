@@ -127,6 +127,7 @@ mchroot:
         emerge app-arch/xz-utils --jobs=3
         emerge app-text/poppler --jobs=3
         emerge sys-devel/binutils sys-devel/libtool sys-devel/make sys-devel/pkgconf --jobs=3
+        emerge app-admin/anise-portage-converter --jobs=3
 
     - none-final: |
         {% if target == "armv7a-unknown-linux-gnueabihf" %}
